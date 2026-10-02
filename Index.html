@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TutorFlow - Modern Dynamic Educator & Physics Lab</title>
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-blue-500 selection:text-white flex flex-col md:flex-row overflow-x-hidden">
+
+  <!-- ================================================================= -->
+  <!--                     ROLE SELECTION POPUP MODAL                     -->
+  <!-- ================================================================= -->
+  <div id="role-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-300">
+    <div class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl max-w-sm w-full text-center space-y-6 shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+      <div class="w-16 h-16 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-inner">
+        <i class="fa-solid fa-atom"></i>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-slate-100 tracking-tight">Welcome to TutorFlow</h2>
+        <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Choose your workspace mode to proceed:</p>
+      </div>
+      
+      <div class="grid grid-cols-1 gap-3 pt-2">
+        <button onclick="setRole('teacher')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-blue-900/30 active:scale-95">
+          <i class="fa-solid fa-chalkboard-user text-lg"></i>
+          <span>Continue as Teacher</span>
+        </button>
+        <button onclick="setRole('student')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-emerald-900/30 active:scale-95">
+          <i class="fa-solid fa-user-graduate text-lg"></i>
+          <span>Continue as Student</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!--                            SIDEBAR                                -->
+  <!-- ================================================================= -->
+  <aside id="sidebar" class="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col justify-between z-30">
+    <div class="p-5 space-y-6">
+      
+      <!-- App Brand Header -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-xl flex items-center justify-center text-xl font-bold shadow-lg shadow-blue-500/20">
+            <i class="fa-solid fa-atom"></i>
+          </div>
+          <div>
+            <h1 class="text-base font-bold tracking-tight text-slate-100">TutorFlow</h1>
+            <p id="role-badge" class="text-[10px] text-blue-400 font-semibold uppercase tracking-wider">Teacher Mode</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Navigation Menu -->
+      <nav class="space-y-1.5 text-xs font-semibold">
+        <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-blue-600 text-white shadow-md shadow-blue-900/20 transition">
+          <i class="fa-solid fa-chart-pie text-sm"></i>
+          <span>Dashboard</span>
+        </button>
+        <button onclick="navigateTo('simulations')" id="nav-simulations" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-400 hover:bg-slate-800/80 hover:text-slate-200 transition">
+          <i class="fa-solid fa-flask text-sm text-purple-400"></i>
+          <span>Physics Lab</span>
+        </button>
+        
+        <!-- Teacher Specific Navigation Items -->
+        <div id="teacher-nav-group" class="space-y-1.5 pt-2">
+          <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Management</p>
+          <button onclick="navigateTo('students')" id="nav-students" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/80 hover:text-slate-200 transition">
+            <i class="fa-solid fa-users text-sm"></i>
+            <span>Students</span>
+          </button>
+          <button onclick="navigateTo('sessions')" id="nav-sessions" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/80 hover:text-slate-200 transition">
+            <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+            <span>Sessions History</span>
+          </button>
+          <button onclick="navigateTo('tasks')" id="nav-tasks" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800/80 hover:text-slate-200 transition">
+            <i class="fa-solid fa-list-check text-sm"></i>
+            <span>Assigned Tasks</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Role Switch Button -->
+    <div class="p-4 border-t border-slate-800 bg-slate-900/50">
+      <button onclick="openRoleModal()" class="w-full text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2.5 rounded-xl text-slate-300 flex items-center justify-center gap-2 transition shadow-sm">
+        <i class="fa-solid fa-arrows-rotate text-blue-400"></i>
+        <span>Switch Workspace Mode</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================================================================= -->
+  <!--                        MAIN CONTENT VIEW                          -->
+  <!-- ================================================================= -->
+  <main class="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto max-w-7xl mx-auto w-full">
+
+    <!-- Header Section -->
+    <div class="flex justify-between items-center border-b border-slate-800/80 pb-4">
+      <div>
+        <h2 id="page-title" class="text-xl font-bold text-slate-100 tracking-tight">Dashboard Overview</h2>
+        <p id="page-subtitle" class="text-xs text-slate-400 mt-0.5">Real-time performance summary and active metrics.</p>
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!--                     SECTION 1: DASHBOARD                        -->
+    <!-- =============================================================== -->
+    <div id="sec-dashboard" class="space-y-6">
+      
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 shadow-lg">
+          <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Active Students</p>
+          <p id="stat-students" class="text-2xl font-black mt-1 text-blue-400">0</p>
+        </div>
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 shadow-lg">
+          <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Sessions Conducted</p>
+          <p id="stat-sessions" class="text-2xl font-black mt-1 text-indigo-400">0</p>
+        </div>
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 shadow-lg">
+          <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total Revenue</p>
+          <p id="stat-revenue" class="text-2xl font-black mt-1 text-emerald-400">৳0</p>
+        </div>
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80 shadow-lg">
+          <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Pending Tasks</p>
+          <p id="stat-tasks" class="text-2xl font-black mt-1 text-amber-400">0</p>
+        </div>
+      </div>
+
+      <!-- Quick Session Log Form -->
+      <div id="teacher-qs-box" class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-blue-400"></i> Quick Log Class Session
+        </h3>
+        <form id="form-quick-session" class="space-y-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <select id="qs-student" required class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+              <option value="">Select Student...</option>
+            </select>
+            <input type="date" id="qs-date" required class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="text" id="qs-topic" placeholder="Topic Covered (e.g. Relative Velocity)" required class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+            <input type="number" id="qs-fee" placeholder="Fee Amount (৳)" required class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+          </div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-blue-900/20 active:scale-95">
+            Record Class Session
+          </button>
+        </form>
+      </div>
+
+      <!-- Recent Log Feed -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Recent Activity Logs</h3>
+        <div id="recent-sessions-list" class="space-y-2"></div>
+      </div>
+    </div>
+
+
+    <!-- =============================================================== -->
+    <!--              SECTION 2: PHYSICS SIMULATOR LAB                   -->
+    <!-- =============================================================== -->
+    <div id="sec-simulations" class="hidden space-y-6">
+      
+      <!-- Simulation Topic Selector -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div onclick="selectSim('relative')" id="card-sim-relative" class="bg-slate-900 p-5 rounded-2xl border-2 border-purple-500/80 cursor-pointer transition hover:border-purple-400 shadow-xl relative overflow-hidden">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-arrows-left-right"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-100 text-sm">1. Relative Motion Engine</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Simulate 1D relative velocity between two objects.</p>
+            </div>
+          </div>
+        </div>
+
+        <div onclick="selectSim('inclined')" id="card-sim-inclined" class="bg-slate-900 p-5 rounded-2xl border-2 border-slate-800 cursor-pointer transition hover:border-slate-700 shadow-xl relative overflow-hidden">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-person-skiing"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-100 text-sm">2. Body on Angled Surface</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Simulate friction & acceleration on an inclined ramp.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN SIMULATION CANVAS WORKSPACE -->
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 md:p-6 space-y-6 shadow-2xl">
+        
+        <!-- Interactive HTML5 Canvas -->
+        <div class="relative bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-inner">
+          <canvas id="simCanvas" width="800" height="320" class="w-full h-auto block"></canvas>
+
+          <!-- Floating Simulation Control Bar -->
+          <div class="absolute bottom-3 right-3 flex items-center gap-2">
+            <button id="btn-sim-toggle" onclick="toggleSimAnimation()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg flex items-center gap-1.5">
+              <i class="fa-solid fa-play"></i> Run Simulation
+            </button>
+            <button onclick="resetSimAnimation()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-bold transition border border-slate-700">
+              <i class="fa-solid fa-rotate-left"></i> Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- SIMULATION PARAMETER CONTROLS -->
+        <!-- Controls for Relative Motion -->
+        <div id="controls-relative" class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950/60 p-4 rounded-2xl border border-slate-800 text-xs">
+          <div class="space-y-1.5">
+            <label class="font-semibold text-slate-300">Object A Velocity ($v_A$): <span id="val-vA" class="text-purple-400 font-bold">20 m/s</span></label>
+            <input type="range" min="5" max="60" value="20" id="input-vA" class="w-full accent-purple-500" oninput="updateSimParams()">
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-semibold text-slate-300">Object B Velocity ($v_B$): <span id="val-vB" class="text-emerald-400 font-bold">10 m/s</span></label>
+            <input type="range" min="5" max="60" value="10" id="input-vB" class="w-full accent-emerald-500" oninput="updateSimParams()">
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-semibold text-slate-300">Direction Mode</label>
+            <select id="input-rel-dir" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-slate-200 focus:outline-none" onchange="updateSimParams()">
+              <option value="same">Same Direction (Overtaking)</option>
+              <option value="opposite">Opposite Direction (Head-On)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Controls for Inclined Surface -->
+        <div id="controls-inclined" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950/60 p-4 rounded-2xl border border-slate-800 text-xs">
+          <div class="space-y-1.5">
+            <label class="font-semibold text-slate-300">Ramp Angle ($\theta$): <span id="val-angle" class="text-indigo-400 font-bold">30°</span></label>
+            <input type="range" min="10" max="75" value="30" id="input-angle" class="w-full accent-indigo-500" oninput="updateSimParams()">
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-semibold text-slate-300">Friction Coeff. ($\mu$): <span id="val-friction" class="text-amber-400 font-bold">0.15</span></label>
+            <input type="range" min="0" max="0.8" step="0.05" value="0.15" id="input-friction" class="w-full accent-amber-500" oninput="updateSimParams()">
+          </div>
+          <div class="space-y-1.5">
+            <label class="font-semibold text-slate-300">Body Mass ($m$): <span id="val-mass" class="text-blue-400 font-bold">5 kg</span></label>
+            <input type="range" min="1" max="25" value="5" id="input-mass" class="w-full accent-blue-500" oninput="updateSimParams()">
+          </div>
+        </div>
+
+        <!-- LIVE COMPUTED TELEMETRY DISPLAY -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+            <span class="text-slate-500 block text-[10px] uppercase font-bold">Elapsed Time</span>
+            <span id="tel-time" class="font-bold text-slate-200 text-sm">0.00 s</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+            <span class="text-slate-500 block text-[10px] uppercase font-bold">Relative / Net Vel</span>
+            <span id="tel-vel" class="font-bold text-purple-400 text-sm">0.00 m/s</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+            <span class="text-slate-500 block text-[10px] uppercase font-bold">Calculated Accel</span>
+            <span id="tel-acc" class="font-bold text-indigo-400 text-sm">0.00 m/s²</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+            <span class="text-slate-500 block text-[10px] uppercase font-bold">Separation / Dist</span>
+            <span id="tel-dist" class="font-bold text-emerald-400 text-sm">0.00 m</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =============================================================== -->
+    <!--                     SECTION 3: STUDENTS                         -->
+    <!-- =============================================================== -->
+    <div id="sec-students" class="hidden space-y-6">
+      <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+          <i class="fa-solid fa-user-plus text-emerald-400"></i> Register New Student
+        </h3>
+        <form id="form-add-student" class="space-y-3">
+          <input type="text" id="stu-name" placeholder="Student Full Name" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="text" id="stu-subject" placeholder="Course / Subject" required class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition">
+            <input type="number" id="stu-rate" placeholder="Default Class Fee (৳)" required class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition">
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-900/20 active:scale-95">
+            Add Student Profile
+          </button>
+        </form>
+      </div>
+
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Registered Enrolled Roster</h3>
+        <div id="students-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      </div>
+    </div>
+
+
+    <!-- =============================================================== -->
+    <!--                     SECTION 4: SESSIONS                         -->
+    <!-- =============================================================== -->
+    <div id="sec-sessions" class="hidden space-y-3">
+      <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">All Logged Class Sessions</h3>
+      <div id="full-sessions-list" class="space-y-2"></div>
+    </div>
+
+
+    <!-- =============================================================== -->
+    <!--                     SECTION 5: TASKS                            -->
+    <!-- =============================================================== -->
+    <div id="sec-tasks" class="hidden space-y-6">
+      <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+          <i class="fa-solid fa-list-check text-amber-400"></i> Assign New Homework Task
+        </h3>
+        <form id="form-add-task" class="space-y-3">
+          <select id="task-student" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition">
+            <option value="">Assign To Student...</option>
+          </select>
+          <input type="text" id="task-title" placeholder="Assignment details or Physics worksheet" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition">
+          <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-amber-900/20 active:scale-95">
+            Assign Homework Task
+          </button>
+        </form>
+      </div>
+
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Homework Assignments</h3>
+        <div id="tasks-list" class="space-y-2"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================================================================= -->
+  <!--                      APPLICATION SCRIPT ENGINE                    -->
+  <!-- ================================================================= -->
+  <script>
+    // LocalStorage Persistent Store
+    let currentRole = localStorage.getItem('tf_role') || 'teacher';
+    let currentNav = 'dashboard';
+
+    let students = JSON.parse(localStorage.getItem('tf_students')) || [
+      { id: '101', name: 'Tanvir Hossain', subject: 'HSC Physics', rate: 600 },
+      { id: '102', name: 'Nusrat Jahan', subject: 'Higher Math', rate: 500 }
+    ];
+
+    let sessions = JSON.parse(localStorage.getItem('tf_sessions')) || [
+      { id: '201', studentId: '101', studentName: 'Tanvir Hossain', date: '2026-10-01', topic: 'Relative Motion & Vectors', fee: 600 }
+    ];
+
+    let tasks = JSON.parse(localStorage.getItem('tf_tasks')) || [
+      { id: '301', studentId: '101', studentName: 'Tanvir Hossain', title: 'Solve Inclined Plane Friction Worksheet', status: 'pending' }
+    ];
+
+    function persistData() {
+      localStorage.setItem('tf_students', JSON.stringify(students));
+      localStorage.setItem('tf_sessions', JSON.stringify(sessions));
+      localStorage.setItem('tf_tasks', JSON.stringify(tasks));
+      renderDataViews();
+    }
+
+    // Role Engine Handler
+    function setRole(role) {
+      currentRole = role;
+      localStorage.setItem('tf_role', role);
+      document.getElementById('role-modal').classList.add('hidden');
+      
+      const roleBadge = document.getElementById('role-badge');
+      const teacherGroup = document.getElementById('teacher-nav-group');
+      const teacherQsBox = document.getElementById('teacher-qs-box');
+
+      if (role === 'teacher') {
+        roleBadge.innerText = 'Teacher Mode';
+        roleBadge.className = 'text-[10px] text-blue-400 font-semibold uppercase tracking-wider';
+        teacherGroup.classList.remove('hidden');
+        if (teacherQsBox) teacherQsBox.classList.remove('hidden');
+      } else {
+        roleBadge.innerText = 'Student Mode';
+        roleBadge.className = 'text-[10px] text-emerald-400 font-semibold uppercase tracking-wider';
+        teacherGroup.classList.add('hidden');
+        if (teacherQsBox) teacherQsBox.classList.add('hidden');
+      }
+
+      navigateTo('dashboard');
+    }
+
+    function openRoleModal() {
+      document.getElementById('role-modal').classList.remove('hidden');
+    }
+
+    // Navigation Router
+    function navigateTo(section) {
+      currentNav = section;
+
+      ['dashboard', 'simulations', 'students', 'sessions', 'tasks'].forEach(sec => {
+        const el = document.getElementById(`sec-${sec}`);
+        if (el) el.classList.add('hidden');
+
+        const navBtn = document.getElementById(`nav-${sec}`);
+        if (navBtn) {
+          navBtn.classList.remove('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-900/20');
+          navBtn.classList.add('text-slate-400');
+        }
+      });
+
+      const activeSec = document.getElementById(`sec-${section}`);
+      if (activeSec) activeSec.classList.remove('hidden');
+
+      const activeNav = document.getElementById(`nav-${section}`);
+      if (activeNav) {
+        activeNav.classList.add('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-900/20');
+        activeNav.classList.remove('text-slate-400');
+      }
+
+      const titleMap = {
+        dashboard: ['Dashboard Overview', 'Real-time performance summary and active metrics.'],
+        simulations: ['Physics Simulation Workspace', 'Interactive dynamic lab for classical mechanics.'],
+        students: ['Enrolled Student Roster', 'Manage active student profiles and class rates.'],
+        sessions: ['Class Session Logs', 'Complete audit trail of conducted tutoring sessions.'],
+        tasks: ['Assigned Student Tasks', 'Track homework status and practical worksheets.']
+      };
+
+      if (titleMap[section]) {
+        document.getElementById('page-title').innerText = titleMap[section][0];
+        document.getElementById('page-subtitle').innerText = titleMap[section][1];
+      }
+
+      if (section === 'simulations') {
+        resizeCanvas();
+        updateSimParams();
+      }
+
+      renderDataViews();
+    }
+
+    // Render Data Dynamic Elements
+    function renderDataViews() {
+      document.getElementById('stat-students').innerText = students.length;
+      document.getElementById('stat-sessions').innerText = sessions.length;
+      const totalRev = sessions.reduce((sum, s) => sum + (Number(s.fee) || 0), 0);
+      document.getElementById('stat-revenue').innerText = `৳${totalRev.toLocaleString()}`;
+      document.getElementById('stat-tasks').innerText = tasks.filter(t => t.status === 'pending').length;
+
+      const optionsHTML = '<option value="">Select Student...</option>' + 
+        students.map(s => `<option value="${s.id}">${s.name} (${s.subject})</option>`).join('');
+      
+      const qsSel = document.getElementById('qs-student');
+      const taskSel = document.getElementById('task-student');
+      if (qsSel) qsSel.innerHTML = optionsHTML;
+      if (taskSel) taskSel.innerHTML = optionsHTML;
+
+      renderRecentSessions();
+      renderFullSessions();
+      renderStudentsList();
+      renderTasksList();
+    }
+
+    function renderRecentSessions() {
+      const container = document.getElementById('recent-sessions-list');
+      const recent = sessions.slice(0, 5);
+      if (!recent.length) {
+        container.innerHTML = `<p class="text-xs text-slate-500 italic p-2">No class sessions recorded yet.</p>`;
+        return;
+      }
+      container.innerHTML = recent.map(s => `
+        <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+          <div>
+            <p class="font-semibold text-slate-200">${s.studentName}</p>
+            <p class="text-slate-400 text-[11px] mt-0.5">${s.topic} • <span class="text-slate-500">${s.date}</span></p>
+          </div>
+          <span class="font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">+৳${s.fee}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderFullSessions() {
+      const container = document.getElementById('full-sessions-list');
+      if (!sessions.length) {
+        container.innerHTML = `<p class="text-xs text-slate-500 italic p-2">No class history found.</p>`;
+        return;
+      }
+      container.innerHTML = sessions.map(s => `
+        <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+          <div>
+            <p class="font-semibold text-slate-200">${s.studentName}</p>
+            <p class="text-slate-400 text-[11px] mt-0.5">${s.topic} • ${s.date}</p>
+          </div>
+          <span class="font-bold text-emerald-400">+৳${s.fee}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderStudentsList() {
+      const container = document.getElementById('students-list');
+      if (!students.length) {
+        container.innerHTML = `<p class="text-xs text-slate-500 italic p-2">No students added yet.</p>`;
+        return;
+      }
+      container.innerHTML = students.map(s => `
+        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 space-y-2">
+          <p class="font-bold text-slate-100 text-sm">${s.name}</p>
+          <p class="text-xs text-slate-400"><i class="fa-solid fa-book-open text-blue-400 mr-1.5"></i> ${s.subject}</p>
+          <p class="text-xs text-emerald-400 font-semibold"><i class="fa-solid fa-tag text-emerald-400 mr-1.5"></i> ৳${s.rate} / class</p>
+        </div>
+      `).join('');
+    }
+
+    function renderTasksList() {
+      const container = document.getElementById('tasks-list');
+      if (!tasks.length) {
+        container.innerHTML = `<p class="text-xs text-slate-500 italic p-2">No assigned homework found.</p>`;
+        return;
+      }
+      container.innerHTML = tasks.map(t => `
+        <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+          <div>
+            <p class="font-semibold text-slate-200">${t.title}</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">Assigned to: ${t.studentName}</p>
+          </div>
+          <span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full font-medium">Pending</span>
+        </div>
+      `).join('');
+    }
+
+
+    // =================================================================
+    //                 PHYSICS SIMULATION ENGINE CORE
+    // =================================================================
+    let activeSimMode = 'relative'; // 'relative' or 'inclined'
+    let isSimRunning = false;
+    let simAnimFrame = null;
+    let simTime = 0;
+
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      if (canvas.parentElement) {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = 320;
+      }
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function selectSim(mode) {
+      activeSimMode = mode;
+      resetSimAnimation();
+
+      const cardRel = document.getElementById('card-sim-relative');
+      const cardInc = document.getElementById('card-sim-inclined');
+      const ctrlRel = document.getElementById('controls-relative');
+      const ctrlInc = document.getElementById('controls-inclined');
+
+      if (mode === 'relative') {
+        cardRel.className = "bg-slate-900 p-5 rounded-2xl border-2 border-purple-500/80 cursor-pointer transition hover:border-purple-400 shadow-xl relative overflow-hidden";
+        cardInc.className = "bg-slate-900 p-5 rounded-2xl border-2 border-slate-800 cursor-pointer transition hover:border-slate-700 shadow-xl relative overflow-hidden";
+        ctrlRel.classList.remove('hidden');
+        ctrlInc.classList.add('hidden');
+      } else {
+        cardRel.className = "bg-slate-900 p-5 rounded-2xl border-2 border-slate-800 cursor-pointer transition hover:border-slate-700 shadow-xl relative overflow-hidden";
+        cardInc.className = "bg-slate-900 p-5 rounded-2xl border-2 border-indigo-500/80 cursor-pointer transition hover:border-indigo-400 shadow-xl relative overflow-hidden";
+        ctrlRel.classList.add('hidden');
+        ctrlInc.classList.remove('hidden');
+      }
+
+      updateSimParams();
+    }
+
+    function updateSimParams() {
+      if (activeSimMode === 'relative') {
+        const vA = parseFloat(document.getElementById('input-vA').value);
+        const vB = parseFloat(document.getElementById('input-vB').value);
+        const dir = document.getElementById('input-rel-dir').value;
+
+        document.getElementById('val-vA').innerText = `${vA} m/s`;
+        document.getElementById('val-vB').innerText = `${vB} m/s`;
+
+        const relVel = dir === 'same' ? Math.abs(vA - vB) : (vA + vB);
+        document.getElementById('tel-vel').innerText = `${relVel.toFixed(1)} m/s`;
+        document.getElementById('tel-acc').innerText = `0.00 m/s²`;
+      } else {
+        const angle = parseFloat(document.getElementById('input-angle').value);
+        const mu = parseFloat(document.getElementById('input-friction').value);
+        const mass = parseFloat(document.getElementById('input-mass').value);
+
+        document.getElementById('val-angle').innerText = `${angle}°`;
+        document.getElementById('val-friction').innerText = mu.toFixed(2);
+        document.getElementById('val-mass').innerText = `${mass} kg`;
+
+        const rad = angle * Math.PI / 180;
+        const g = 9.8;
+        let acc = g * (Math.sin(rad) - mu * Math.cos(rad));
+        if (acc < 0) acc = 0; // Frictional static lock
+
+        document.getElementById('tel-acc').innerText = `${acc.toFixed(2)} m/s²`;
+      }
+
+      if (!isSimRunning) drawSimFrame();
+    }
+
+    function toggleSimAnimation() {
+      isSimRunning = !isSimRunning;
+      const btn = document.getElementById('btn-sim-toggle');
+      if (isSimRunning) {
+        btn.innerHTML = `<i class="fa-solid fa-pause"></i> Pause`;
+        btn.className = "bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg flex items-center gap-1.5";
+        lastTimestamp = performance.now();
+        simAnimFrame = requestAnimationFrame(simLoop);
+      } else {
+        btn.innerHTML = `<i class="fa-solid fa-play"></i> Run Simulation`;
+        btn.className = "bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg flex items-center gap-1.5";
+        cancelAnimationFrame(simAnimFrame);
+      }
+    }
+
+    function resetSimAnimation() {
+      isSimRunning = false;
+      cancelAnimationFrame(simAnimFrame);
+      simTime = 0;
+      
+      const btn = document.getElementById('btn-sim-toggle');
+      btn.innerHTML = `<i class="fa-solid fa-play"></i> Run Simulation`;
+      btn.className = "bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg flex items-center gap-1.5";
+      
+      document.getElementById('tel-time').innerText = "0.00 s";
+      document.getElementById('tel-dist').innerText = "0.00 m";
+      
+      updateSimParams();
+    }
+
+    let lastTimestamp = 0;
+    function simLoop(timestamp) {
+      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
+      lastTimestamp = timestamp;
+
+      simTime += dt;
+      document.getElementById('tel-time').innerText = `${simTime.toFixed(2)} s`;
+
+      drawSimFrame(dt);
+
+      if (isSimRunning) {
+        simAnimFrame = requestAnimationFrame(simLoop);
+      }
+    }
+
+    function drawSimFrame(dt = 0) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (activeSimMode === 'relative') {
+        drawRelativeMotionSim();
+      } else {
+        drawInclinedPlaneSim();
+      }
+    }
+
+    // Render Relative Motion Simulator
+    function drawRelativeMotionSim() {
+      const vA = parseFloat(document.getElementById('input-vA').value);
+      const vB = parseFloat(document.getElementById('input-vB').value);
+      const dir = document.getElementById('input-rel-dir').value;
+
+      const scale = 3;
+      let posA = (vA * simTime * scale) % (canvas.width - 60);
+      let posB = 0;
+
+      if (dir === 'same') {
+        posB = (vB * simTime * scale) % (canvas.width - 60);
+      } else {
+        posB = (canvas.width - 60) - ((vB * simTime * scale) % (canvas.width - 60));
+      }
+
+      const dist = Math.abs(posA - posB) / scale;
+      document.getElementById('tel-dist').innerText = `${dist.toFixed(1)} m`;
+
+      // Draw Lanes
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(30, 120); ctx.lineTo(canvas.width - 30, 120);
+      ctx.moveTo(30, 220); ctx.lineTo(canvas.width - 30, 220);
+      ctx.stroke();
+
+      // Object A (Purple Car)
+      ctx.fillStyle = '#a855f7';
+      ctx.beginPath();
+      ctx.roundRect(30 + posA, 95, 45, 22, 6);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillText('Obj A', 38 + posA, 110);
+
+      drawArrow(ctx, 52 + posA, 85, 52 + posA + vA, 85, '#c084fc');
+
+      // Object B (Emerald Car)
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      ctx.roundRect(30 + posB, 195, 45, 22, 6);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('Obj B', 38 + posB, 210);
+
+      const dirB = dir === 'same' ? 1 : -1;
+      drawArrow(ctx, 52 + posB, 185, 52 + posB + (vB * dirB), 185, '#34d399');
+    }
+
+    // Render Inclined Plane Simulator
+    function drawInclinedPlaneSim() {
+      const angle = parseFloat(document.getElementById('input-angle').value);
+      const mu = parseFloat(document.getElementById('input-friction').value);
+      const rad = angle * Math.PI / 180;
+      const g = 9.8;
+
+      let acc = g * (Math.sin(rad) - mu * Math.cos(rad));
+      if (acc < 0) acc = 0;
+
+      const currentVel = acc * simTime;
+      const dist = 0.5 * acc * simTime * simTime;
+
+      document.getElementById('tel-vel').innerText = `${currentVel.toFixed(2)} m/s`;
+      document.getElementById('tel-dist').innerText = `${dist.toFixed(2)} m`;
+
+      const startX = 60;
+      const startY = 260;
+      const rampLength = 320;
+      const endX = startX + rampLength * Math.cos(rad);
+      const endY = startY - rampLength * Math.sin(rad);
+
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.lineTo(endX, startY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Angle Indicator
+      ctx.strokeStyle = '#818cf8';
+      ctx.beginPath();
+      ctx.arc(startX, startY, 40, 0, -rad, true);
+      ctx.stroke();
+      ctx.fillStyle = '#818cf8';
+      ctx.font = '11px sans-serif';
+      ctx.fillText(`${angle}°`, startX + 48, startY - 8);
+
+      // Block Position along ramp
+      const pixelDist = Math.min(dist * 12, rampLength - 30);
+      const blockCenterX = endX - pixelDist * Math.cos(rad);
+      const blockCenterY = endY + pixelDist * Math.sin(rad);
+
+      ctx.save();
+      ctx.translate(blockCenterX, blockCenterY);
+      ctx.rotate(-rad);
+      ctx.fillStyle = '#6366f1';
+      ctx.fillRect(-15, -20, 30, 20);
+      ctx.strokeStyle = '#a5b4fc';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(-15, -20, 30, 20);
+      ctx.restore();
+    }
+
+    function drawArrow(context, fromx, fromy, tox, toy, color) {
+      const headlen = 6;
+      const dx = tox - fromx;
+      const dy = toy - fromy;
+      const angle = Math.atan2(dy, dx);
+      context.strokeStyle = color;
+      context.fillStyle = color;
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(fromx, fromy);
+      context.lineTo(tox, toy);
+      context.stroke();
+      context.beginPath();
+      context.moveTo(tox, toy);
+      context.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+      context.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+      context.closePath();
+      context.fill();
+    }
+
+
+    // =================================================================
+    //                    FORM SUBMISSION HANDLERS
+    // =================================================================
+    document.getElementById('form-add-student').addEventListener('submit', (e) => {
+      e.preventDefault();
+      students.push({
+        id: Date.now().toString(),
+        name: document.getElementById('stu-name').value,
+        subject: document.getElementById('stu-subject').value,
+        rate: document.getElementById('stu-rate').value
+      });
+      e.target.reset();
+      persistData();
+    });
+
+    document.getElementById('form-quick-session').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const studentId = document.getElementById('qs-student').value;
+      const student = students.find(s => s.id === studentId);
+      sessions.unshift({
+        id: Date.now().toString(),
+        studentId,
+        studentName: student ? student.name : 'Unknown',
+        date: document.getElementById('qs-date').value,
+        topic: document.getElementById('qs-topic').value,
+        fee: document.getElementById('qs-fee').value
+      });
+      e.target.reset();
+      document.getElementById('qs-date').valueAsDate = new Date();
+      persistData();
+    });
+
+    document.getElementById('form-add-task').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const studentId = document.getElementById('task-student').value;
+      const student = students.find(s => s.id === studentId);
+      tasks.unshift({
+        id: Date.now().toString(),
+        studentId,
+        studentName: student ? student.name : 'Unknown',
+        title: document.getElementById('task-title').value,
+        status: 'pending'
+      });
+      e.target.reset();
+      persistData();
+    });
+
+    // Boot Routine
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('qs-date').valueAsDate = new Date();
+      setRole(currentRole);
+      resizeCanvas();
+    });
+  </script>
+</body>
+</html>

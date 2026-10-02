@@ -1,0 +1,12 @@
+{
+  "students": [
+    { "id": "101", "name": "Tanvir Hossain", "subject": "HSC Physics", "rate": 600 },
+    { "id": "102", "name": "Nusrat Jahan", "subject": "Higher Math", "rate": 500 }
+  ],
+  "sessions": [
+    { "id": "201", "studentId": "101", "studentName": "Tanvir Hossain", "date": "2026-10-01", "topic": "Relative Motion & Vectors", "fee": 600 }
+  ],
+  "tasks": [
+    { "id": "301", "studentId": "101", "studentName": "Tanvir Hossain", "title": "Solve Inclined Plane Friction Worksheet", "status": "pending" }
+  ]
+}

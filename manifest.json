@@ -1,0 +1,9 @@
+{
+  "short_name": "TutorFlow",
+  "name": "TutorFlow - Modern Educator & Physics Lab",
+  "icons": [],
+  "start_url": ".",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "display": "standalone"
+}
